@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using OportunidadeVenda.Data.CnpjApiData.Services;
 using OportunidadeVenda.Data.CnpjApiData;
-using System.Text.RegularExpressions;
 using OportunidadeVenda.Context;
 using OportunidadeVenda.Data;
 
@@ -57,12 +56,16 @@ namespace OportunidadeVenda.Controllers
                 Cnpj cnpjInfo = await cnpjApiService.Informacao(opt.Cnpj);
 
                 //Realizando calculo para obter valor correspondente a região do usuáro
-                //ainda sendo feito
-                
+                var regiaocnpj_int = cnpjInfo.Estabelecimento.Estado.IbgeId;
+                var regiaocnpj = cnpjInfo.Estabelecimento.Estado.IbgeId.ToString();
+                var regiaoCase = Convert.ToInt32(regiaocnpj.Substring(1, 1));
+                var regiaousuario = (usuario[0].Regiao * 10) + regiaoCase;
+
                 /* TODO */
+                //System.Diagnostics.Debug.WriteLine($"Numemo ------ {regiaousuario}");
 
                 //Lista Cnpj por região do usuário - (ainda sendo feito)
-                if (cnpjInfo.Estabelecimento.Estado.IbgeId == 35) {
+                if (regiaocnpj_int == regiaousuario) {
                     //adicionar lista
                     listCnpj.Add(cnpjInfo);
                 }
