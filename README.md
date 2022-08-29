@@ -10,10 +10,10 @@ Se faz necessário realizar a instalação das aplicações/frameworks abaixo:
 
     - **[Visual Studio](https://visualstudio.microsoft.com/downloads/?WT.mc_id=javascript-0000-gllemos)**
     - **[.NET Core 6.0](https://dotnet.microsoft.com/download?WT.mc_id=javascript-0000-gllemos)**
-    - **[MS EntityFrameworkCore 6.0.8]
-    - **[MS EntityFrameworkCoreDesign 6.0.8]
-    - **[MS WebCodeGenerationDesign 6.0.8]
-    - **[MS SwashbuckleAspNetCore 6.4.0]
+    - [MS EntityFrameworkCore 6.0.8]
+    - [MS EntityFrameworkCoreDesign 6.0.8]
+    - [MS WebCodeGenerationDesign 6.0.8]
+    - [MS SwashbuckleAspNetCore 6.4.0]
 
     
  # Features
