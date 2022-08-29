@@ -4,6 +4,8 @@ using OportunidadeVenda.Data.CnpjApiData.Services;
 using OportunidadeVenda.Data.CnpjApiData;
 using OportunidadeVenda.Context;
 using OportunidadeVenda.Data;
+using System.Text.RegularExpressions;
+using System.Text.Json.Nodes;
 
 namespace OportunidadeVenda.Controllers
 {
@@ -20,60 +22,75 @@ namespace OportunidadeVenda.Controllers
 
         // GET: api/Cnpj/{cnpj} - API Externa tendo como base informações do IBGE
         [HttpGet("{cnpj}")]
-        public async Task<List<Cnpj>> GetCnpj(string cnpj)
+        public async Task<Cnpj> GetCnpj(string cnpj)
         {
-                //Instaciando Classe CNPJ API SERVICE
-                CnpjApiService cnpjApiService = new CnpjApiService();
+            //Instaciando Classe CNPJ API SERVICE
+            CnpjApiService cnpjApiService = new CnpjApiService();
 
-                //Deserializando e retornando os atributos da API
-                Cnpj cnpjInfo = await cnpjApiService.Informacao(cnpj);
-                
-                var listCnpj = new List<Cnpj>();
-                listCnpj.Add(cnpjInfo);
-                return listCnpj;
+            //REMOVER MASK STRING CNPJ
+            Regex numeros = new Regex(@"[^0-9]");
+
+            /* TESTE DEPURADOR */
+            System.Diagnostics.Debug.WriteLine($"REGEX CNPJ ------ {numeros.Replace(cnpj, "")}");
+
+            //Deserializando e retornando os atributos da API
+            Cnpj cnpjInfo = await cnpjApiService.Informacao(numeros.Replace(cnpj, ""));
+
+            return cnpjInfo;
+
+            
 
         }
 
         // GET: api/Cnpj/Oportonidade/Buscar/{usuario} - Buscar Oportunidades com base na região do usuário
         [HttpGet("/Oportunidades/Buscar/{id_usuario}")]
-        public async Task<List<Object>> GetOpotunidadeBuscar(int id_usuario)
+        public async Task<ActionResult<List<Cnpj>>> GetOpotunidadeBuscar(int id_usuario)
         {
-            //Seleciona um vendedor    
-            var usuario = await _context.Usuarios.Where(p => p.Id == id_usuario).ToListAsync();
+            
+            //recupera lista
+            var listCnpj = new List<Cnpj>();
+
+            //Seleciona um vendedor&
+            UsuariosController usuariosController = new(_context);
+            var usuario = await usuariosController.GetUsuario(id_usuario);
 
             //Recebendo lista de oportunidade de acordo com a regiao do usuário
-            var oportunidade = await _context.Oportunidade.ToListAsync();
+            OportunidadesController oportunidadeController = new(_context);
+            var oportunidade = await oportunidadeController.GetOportunidade();
 
-            //Instaciando Classe CNPJ API SERVICE
-            CnpjApiService cnpjApiService = new CnpjApiService();
+            /* TESTE DEPURADOR */
+            System.Diagnostics.Debug.WriteLine($"USER REGIAO ------ {usuario?.Value?.Name}");
 
-            //recupera lista
-            var listCnpj = new List<Object>();
-
-            foreach (var opt in oportunidade)
+            foreach (Oportunidade opt in oportunidade.Value)
             {
+                
                 //get atributos da API CNPJ
-                Cnpj cnpjInfo = await cnpjApiService.Informacao(opt.Cnpj);
+                Cnpj cnpj = await GetCnpj(opt.Cnpj);
 
+                /* TESTE DEPURADOR */
+                System.Diagnostics.Debug.WriteLine($"OPT CNPJ ------ {opt.Cnpj}");
+              
                 //Realizando calculo para obter valor correspondente a região do usuáro
-                var regiaocnpj_int = cnpjInfo.Estabelecimento.Estado.IbgeId;
-                var regiaocnpj = cnpjInfo.Estabelecimento.Estado.IbgeId.ToString();
-                var regiaoCase = Convert.ToInt32(regiaocnpj.Substring(1, 1));
-                var regiaousuario = (usuario[0].Regiao * 10) + regiaoCase;
+                var regiaocnpj_int = cnpj.Estabelecimento?.Estado.IbgeId;
+                var regiaocnpj = cnpj.Estabelecimento?.Estado.IbgeId.ToString();
+                int regiaoCase = Convert.ToInt32(regiaocnpj?.Substring(1, 1));
+                int regiaousuario = (int)((usuario?.Value?.Regiao * 10) + regiaoCase);
 
-                /* TODO */
-                //System.Diagnostics.Debug.WriteLine($"Numemo ------ {regiaousuario}");
+                /* TESTE DEPURADOR */
+                System.Diagnostics.Debug.WriteLine($"API CNPJ INT ------ {cnpj.Estabelecimento?.Estado.IbgeId}");
+                System.Diagnostics.Debug.WriteLine($"API CNPJ RAZAO ------ {cnpj.RazaoSocial}");
 
-                //Lista Cnpj por região do usuário - (ainda sendo feito)
-                if (regiaocnpj_int == regiaousuario) {
+                //Lista Cnpj por região do usuário 
+                if (regiaocnpj_int == regiaousuario && opt.IdUsuario == null) {
+                            
                     //adicionar lista
-                    listCnpj.Add(cnpjInfo);
+                    listCnpj.Add(cnpj);
                 }
-            }
+             }
             //retornar lista
             return listCnpj;
-
         }
+
     }
 }
 
