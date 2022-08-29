@@ -21,5 +21,5 @@ Se faz necessário realizar a instalação das aplicações/frameworks abaixo:
 - [x] Cadastro de usuário
 - [x] Cadastro de oportunidade
 - [x] Integra API externa
-- [x] Buscar oportunidades de cordo com a região do usuário
+- [x] Buscar oportunidades de acordo com a região do usuário
 - [x] Remover máscara da string Cnpj
