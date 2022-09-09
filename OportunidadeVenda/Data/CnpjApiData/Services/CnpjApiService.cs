@@ -3,11 +3,10 @@ using OportunidadeVenda.Controllers;
 
 namespace OportunidadeVenda.Data.CnpjApiData.Services
 {
-    public class CnpjApiService
+    public class CnpjApiService : ICnpjApiService
     {
         public async Task<Cnpj> Informacao(string cnpj)
         {
-
             HttpClient httpClient = new HttpClient();
             var response = await httpClient.GetAsync($"https://publica.cnpj.ws/cnpj/{cnpj}");
             var jsonString = await response.Content.ReadAsStringAsync();
@@ -17,7 +16,6 @@ namespace OportunidadeVenda.Data.CnpjApiData.Services
 
             //Retornando o Objeto
             return _jsonObject;
-
         }
     }
 }
